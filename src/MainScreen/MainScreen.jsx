@@ -23,7 +23,7 @@ const MainScreen = () => {
           <Grid item xs={6}>
             <TextField
               fullWidth
-              label="Name"
+              label="Names"
               variant="outlined"
               type="email"
               required

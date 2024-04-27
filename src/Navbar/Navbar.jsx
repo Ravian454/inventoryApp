@@ -6,7 +6,7 @@ const Navbar = () => {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" style={{ flexGrow: 1, textAlign: 'center' }}>
-          Point Of Sale System (POS)
+          Inventory Managment System
         </Typography>
       </Toolbar>
     </AppBar>

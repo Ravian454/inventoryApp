@@ -94,7 +94,7 @@ const MainScreen = () => {
                 <Select
                   labelId="size-label"
                   id="size"
-                  label="Age"
+                  label="Size"
                   defaultValue={10}
                 >
                   <MenuItem value={10}>16 (1.5 to 2 years)</MenuItem>
@@ -112,7 +112,7 @@ const MainScreen = () => {
             <Grid item xs={6}>
               <TextField
                 fullWidth
-                label="Names"
+                label="Name"
                 variant="outlined"
                 type="text"
                 required

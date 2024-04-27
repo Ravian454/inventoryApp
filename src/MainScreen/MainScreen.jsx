@@ -1,9 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { TextField, Button, Container, Grid, FormControl, InputLabel, Select, MenuItem } from '@material-ui/core';
 import Navbar from '../Navbar/Navbar.jsx';
+import Loader from '../Loader/Loader.jsx';
+import SimpleTable from '../Table/Table.jsx';
 
 const MainScreen = () => {
   const [barcode, setBarcode] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [tableData, setTableData] = useState([]);
+  const [formSubmitted, setFormSubmitted] = useState(false);
   const barcodeRef = useRef(null);
 
   useEffect(() => {
@@ -12,14 +17,42 @@ const MainScreen = () => {
     }
   }, []);
 
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+  }, []);
+
+  useEffect(() => {
+    if (!loading && barcodeRef.current) {
+      barcodeRef.current.focus();
+    }
+  }, [loading]);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     // Handle form submission logic here
+
+    // Example: Set some dummy data for the table
+    setTableData([
+      { column1: 'Data 1', column2: 'Data 2' },
+      { column1: 'Data 3', column2: 'Data 4' },
+      { column1: 'Data 3', column2: 'Data 4' },
+      { column1: 'Data 3', column2: 'Data 4' },
+      { column1: 'Data 3', column2: 'Data 4' },
+
+      // Add more rows as needed
+    ]);
+    setFormSubmitted(true); // Set formSubmitted to true after submitting the form
   };
 
   const handleBarcodeChange = (event) => {
     setBarcode(event.target.value);
   };
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <>
@@ -119,11 +152,12 @@ const MainScreen = () => {
                 color="primary"
                 fullWidth
               >
-                Submit
+                Done
               </Button>
             </Grid>
           </Grid>
         </form>
+        <SimpleTable data={tableData} />
       </Container>
     </>
   );

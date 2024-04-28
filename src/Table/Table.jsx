@@ -1,5 +1,6 @@
-import React from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, makeStyles } from '@material-ui/core';
+import React, {useEffect, useState} from 'react';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, makeStyles, Button } from '@material-ui/core';
+// import json2csv from 'json2csv';
 
 const useStyles = makeStyles({
   table: {
@@ -13,10 +14,49 @@ const useStyles = makeStyles({
     fontWeight: 'bold',
     backgroundColor: '#f0f0f0', // Background color for header cells
   },
+  buttonContainer: {
+    marginBottom: 20,
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
 });
 
-const SimpleTable = ({ data }) => {
+const SimpleTable = () => {
   const classes = useStyles();
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []); // Fetch data when component mounts
+
+  const fetchData = () => {
+    // Make GET request to your Laravel API
+    fetch('http://localhost:8000/api/getData') // Replace 'http://your-api-url/data' with your actual API endpoint
+      .then(response => response.json())
+      .then(data => setData(data.products)) // Extract 'products' array from the API response
+      .catch(error => console.error('Error fetching data:', error));
+  };
+
+  const downloadCSV = () => {
+    const csvRows = [];
+    const headers = Object.keys(data[0]);
+    csvRows.push(headers.join(','));
+
+    data.forEach(row => {
+      const values = headers.map(header => {
+        return `"${row[header]}"`;
+      });
+      csvRows.push(values.join(','));
+    });
+
+    const csvData = csvRows.join('\n');
+    const encodedUri = encodeURI(`data:text/csv;charset=utf-8,${csvData}`);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'table_data.csv');
+    document.body.appendChild(link);
+    link.click();
+  };
 
   return (
     <div style={{ marginTop: '40px' }}>
@@ -24,6 +64,7 @@ const SimpleTable = ({ data }) => {
         <Table className={classes.table}>
           <TableHead>
             <TableRow>
+              <TableCell className={classes.tableHeaderCell}>Id</TableCell>
               <TableCell className={classes.tableHeaderCell}>Category</TableCell>
               <TableCell className={classes.tableHeaderCell}>Name</TableCell>
               <TableCell className={classes.tableHeaderCell}>Price</TableCell>
@@ -36,18 +77,27 @@ const SimpleTable = ({ data }) => {
           <TableBody>
             {data.map((row, index) => (
               <TableRow key={index}>
+                <TableCell>{row.id}</TableCell>
                 <TableCell>{row.category}</TableCell>
                 <TableCell>{row.name}</TableCell>
                 <TableCell>{row.price}</TableCell>
                 <TableCell>{row.size}</TableCell>
-                <TableCell>{row.inStock}</TableCell>
-                <TableCell>{row.outStock}</TableCell>
+                <TableCell>{row.in_stock}</TableCell>
+                <TableCell>{row.out_stock}</TableCell>
                 <TableCell>{row.barcode}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+      <div className={classes.buttonContainer}>
+        <Button variant="contained" color="primary" style={{ marginTop: '30px' }} onClick={fetchData}>
+          Refresh Table
+        </Button>
+        <Button variant="contained" color="secondary" style={{ marginTop: '30px' }} onClick={downloadCSV}>
+          Download CSV
+        </Button>
+      </div>
     </div>
   );
 };

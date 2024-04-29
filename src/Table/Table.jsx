@@ -31,9 +31,9 @@ const SimpleTable = () => {
 
   const fetchData = () => {
     // Make GET request to your Laravel API
-    fetch('http://localhost:8000/api/getData') // Replace 'http://your-api-url/data' with your actual API endpoint
+    fetch('http://localhost:8000/api/getData')
       .then(response => response.json())
-      .then(data => setData(data.products)) // Extract 'products' array from the API response
+      .then(data => setData(data.products))
       .catch(error => console.error('Error fetching data:', error));
   };
 

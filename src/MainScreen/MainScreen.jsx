@@ -9,6 +9,8 @@ import {
   Select,
   MenuItem,
 } from "@material-ui/core";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../Navbar/Navbar.jsx";
 import Loader from "../Loader/Loader.jsx";
 import SimpleTable from "../Table/Table.jsx";
@@ -16,6 +18,8 @@ import SimpleTable from "../Table/Table.jsx";
 const MainScreen = () => {
   const [barcode, setBarcode] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   // const [tableData, setTableData] = useState([]);
   // const [formSubmitted, setFormSubmitted] = useState(false);
   const barcodeRef = useRef(null);
@@ -63,13 +67,14 @@ const MainScreen = () => {
       if (!postDataResponse.ok) {
         throw new Error("Failed to insert data");
       }
-  
-      // Optionally, handle successful response
     } catch (error) {
-      console.error("Error inserting data:", error.message);
+      setError (error.message);
+      // console.error("Error inserting data:", error.message);
+      if (error.message == 'Failed to insert data') {
+      toast.error(`Data already exists`);    
     }
+  }
   };
-  
 
   const handleBarcodeChange = (event) => {
     setBarcode(event.target.value);
@@ -199,6 +204,7 @@ const MainScreen = () => {
 
         <SimpleTable />
       </Container>
+      <ToastContainer />
     </>
   );
 };

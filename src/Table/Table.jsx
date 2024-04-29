@@ -1,6 +1,15 @@
-import React, {useEffect, useState} from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, makeStyles, Button } from '@material-ui/core';
-// import json2csv from 'json2csv';
+import React, { useEffect, useState } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  makeStyles,
+  Button,
+} from '@material-ui/core';
 
 const useStyles = makeStyles({
   table: {
@@ -8,16 +17,23 @@ const useStyles = makeStyles({
   },
   tableContainer: {
     marginTop: 20,
-    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)', // Adding shadow effect
+    boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
   },
   tableHeaderCell: {
     fontWeight: 'bold',
-    backgroundColor: '#f0f0f0', // Background color for header cells
+    backgroundColor: '#f0f0f0',
   },
   buttonContainer: {
     marginBottom: 20,
     display: 'flex',
     justifyContent: 'space-between',
+  },
+  imageCell: {
+    maxWidth: 200,
+  },
+  image: {
+    width: '350px', 
+    height: 'auto',
   },
 });
 
@@ -27,10 +43,9 @@ const SimpleTable = () => {
 
   useEffect(() => {
     fetchData();
-  }, []); // Fetch data when component mounts
+  }, []);
 
   const fetchData = () => {
-    // Make GET request to your Laravel API
     fetch('http://localhost:8000/api/getData')
       .then(response => response.json())
       .then(data => setData(data.products))
@@ -72,6 +87,7 @@ const SimpleTable = () => {
               <TableCell className={classes.tableHeaderCell}>In Stock</TableCell>
               <TableCell className={classes.tableHeaderCell}>Out Stock</TableCell>
               <TableCell className={classes.tableHeaderCell}>Barcode</TableCell>
+              <TableCell className={classes.tableHeaderCell}>Image</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -85,6 +101,9 @@ const SimpleTable = () => {
                 <TableCell>{row.in_stock}</TableCell>
                 <TableCell>{row.out_stock}</TableCell>
                 <TableCell>{row.barcode}</TableCell>
+                <TableCell className={classes.imageCell}>
+                  {row.image && <img src={`http://localhost:8000/storage/images/${row.image}`} alt="Product" className={classes.image} />} {/* Display image if available */}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

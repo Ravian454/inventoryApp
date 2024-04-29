@@ -19,9 +19,8 @@ const MainScreen = () => {
   const [barcode, setBarcode] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
 
-  // const [tableData, setTableData] = useState([]);
-  // const [formSubmitted, setFormSubmitted] = useState(false);
   const barcodeRef = useRef(null);
 
   useEffect(() => {
@@ -45,39 +44,65 @@ const MainScreen = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
   
-    const formData = {
-      category: event.target.category.value,
-      name: event.target.name.value,
-      price: event.target.price.value,
-      size: event.target.size.value,
-      in_stock: event.target.inStock.value,
-      out_stock: event.target.outStock.value,
-      barcode: event.target.barcode.value,
-    };
+    // Your remaining form submission logic
+    const formData = new FormData();
+    formData.append("category", event.target.category.value);
+    formData.append("name", event.target.name.value);
+    formData.append("price", event.target.price.value);
+    formData.append("size", event.target.size.value);
+    formData.append("in_stock", event.target.inStock.value);
+    formData.append("out_stock", event.target.outStock.value);
+    formData.append("barcode", event.target.barcode.value);
   
-    try {      
+    if (selectedImage) {
+      const reader = new FileReader();
+      reader.onloadend = function () {
+        const imageData = reader.result;
+        formData.append("image", imageData);
+        
+        // Now you can send formData to the backend
+        console.log("FormData with image:", formData);
+        sendFormData(formData);
+      };
+      reader.readAsDataURL(selectedImage);
+    } else {
+      // If no image is selected, directly send formData to the backend
+      sendFormData(formData);
+    }
+  };
+  
+  const sendFormData = async (formData) => {
+    try {
       const postDataResponse = await fetch("http://localhost:8000/api/insertData", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+        body: formData,
       });
   
       if (!postDataResponse.ok) {
         throw new Error("Failed to insert data");
       }
+  
+      // Reset form and state after successful submission
+      event.target.reset();
+      setBarcode("");
+      setSelectedImage(null);
+      toast.success("Data inserted successfully");
     } catch (error) {
-      setError (error.message);
-      // console.error("Error inserting data:", error.message);
-      if (error.message == 'Failed to insert data') {
-      toast.error(`Data already exists`);    
+      setError(error.message);
+      if (error.message === "Failed to insert data") {
+        toast.error(`Duplicate date entry`);
+      }
     }
-  }
   };
+  
 
   const handleBarcodeChange = (event) => {
     setBarcode(event.target.value);
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    setSelectedImage(file);
   };
 
   if (loading) {
@@ -129,7 +154,7 @@ const MainScreen = () => {
             </Grid>
             <Grid item xs={6}>
               <FormControl fullWidth>
-                <InputLabel id="size-label">Age</InputLabel>
+                <InputLabel id="size-label">Size</InputLabel>
                 <Select
                   labelId="size-label"
                   id="size"
@@ -188,6 +213,20 @@ const MainScreen = () => {
                 required
                 name="outStock" // Add name attribute for outStock
               />
+            </Grid>
+            <Grid item xs={6}>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+              {selectedImage && (
+                <img
+                  src={URL.createObjectURL(selectedImage)}
+                  alt="Selected"
+                  style={{ maxWidth: "100%", marginTop: "10px" }}
+                />
+              )}
             </Grid>
             <Grid item xs={12}>
               <Button

@@ -13,6 +13,9 @@ import {
   Select,
   MenuItem,
   Typography,
+  Drawer,
+  TextField,
+  InputLabel,
 } from "@material-ui/core";
 
 const useStyles = makeStyles({
@@ -37,16 +40,16 @@ const useStyles = makeStyles({
     width: 200, // Fixed width for consistency
   },
   imageContainer: {
-    width: '100%',
+    width: "100%",
     height: 200, // Fixed height for consistency
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
   },
   image: {
-    width: 'auto',
-    height: '100%',
+    width: "auto",
+    height: "100%",
   },
   filterContainer: {
     marginBottom: 20,
@@ -65,6 +68,8 @@ const SimpleTable = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); 
+  const [selectedRow, setSelectedRow] = useState(null);
 
   useEffect(() => {
     fetchCategories();
@@ -125,10 +130,25 @@ const SimpleTable = () => {
     link.click();
   };
 
+  const handleEditClick = (rowData) => {
+    // Function to handle opening the Drawer
+    console.log(rowData);
+    setSelectedRow(rowData);
+    setIsDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    // Function to handle closing the Drawer
+    setIsDrawerOpen(false);
+  };
+
   return (
-    <div style={{ marginTop: "40px"}}>
+    <div style={{ marginTop: "40px" }}>
       <div className={classes.filterContainer}>
-      <Typography gutterBottom style={{ color: "black", marginRight: "10px" }}>
+        <Typography
+          gutterBottom
+          style={{ color: "black", marginRight: "10px" }}
+        >
           Filter by Category
         </Typography>
         <FormControl variant="outlined" className={classes.formControl}>
@@ -166,6 +186,7 @@ const SimpleTable = () => {
               </TableCell>
               <TableCell className={classes.tableHeaderCell}>Barcode</TableCell>
               <TableCell className={classes.tableHeaderCell}>Image</TableCell>
+              <TableCell className={classes.tableHeaderCell}>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -180,20 +201,128 @@ const SimpleTable = () => {
                 <TableCell>{row.out_stock}</TableCell>
                 <TableCell>{row.barcode}</TableCell>
                 <TableCell className={classes.imageCell}>
-  {row.image && (
-    <div className={classes.imageContainer}>
-      <img
-        src={`http://localhost:8000/storage/images/${row.image}`}
-        alt="Product"
-        className={classes.image}
-      />
-    </div>
-  )}
-</TableCell>
-
+                  {row.image && (
+                    <div className={classes.imageContainer}>
+                      <img
+                        src={`http://localhost:8000/storage/images/${row.image}`}
+                        alt="Product"
+                        className={classes.image}
+                      />
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleEditClick(row)}
+                  >
+                    Edit
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
+          <Drawer
+        anchor="top"
+        open={isDrawerOpen}
+        onClose={handleCloseDrawer} // Call handleCloseDrawer function on close
+      >
+        {/* Content of your Drawer */}
+        <div style={{ padding: "20px" }}>
+        <div style={{ padding: "20px", display: "flex", justifyContent: "space-evenly" }}> 
+          <FormControl>
+          <TextField
+                label="Category"
+                variant="outlined"
+                required
+                type="text"
+                name="category" // Add name attribute for category
+                value={selectedRow ? selectedRow.category : ""}
+              />
+              <TextField
+                    label="Barcode"
+                    variant="outlined"
+                    style={{ marginTop: "10px" }}
+                    required
+                    type="text"
+                    name="barcode" // Add name attribute for category
+                    value={selectedRow ? selectedRow.barcode : ""}
+                  />
+          </FormControl>
+          <FormControl >
+                <InputLabel id="size-label">Size</InputLabel>
+                <Select
+                  labelId="size-label"
+                  id="size"
+                  label="Size"
+                  defaultValue={16}
+                  name="size" // Add name attribute for size
+                  // value={selectedRow ? parseInt(selectedRow.size) : ""}
+                >
+                  <MenuItem value={16}>16 (1.5 to 2 years)</MenuItem>
+                  <MenuItem value={18}>18 (2 to 3 years)</MenuItem>
+                  <MenuItem value={20}>20 (3 to 4 years)</MenuItem>
+                  <MenuItem value={22}>22 (4 to 5 years)</MenuItem>
+                  <MenuItem value={24}>24 (5 to 6 years)</MenuItem>
+                  <MenuItem value={26}>26 (7 to 8 years)</MenuItem>
+                  <MenuItem value={28}>28 (8 to 9 years)</MenuItem>
+                  <MenuItem value={30}>30 (9 to 10 years)</MenuItem>
+                  <MenuItem value={32}>32 (10 to 11 years)</MenuItem>
+                </Select>
+              </FormControl>
+
+              <TextField
+                label="Name"
+                variant="outlined"
+                type="text"
+                required
+                name="name" // Add name attribute for name
+                value={selectedRow ? selectedRow.name : ""}
+
+              />
+              <TextField
+                
+                label="Price"
+                variant="outlined"
+                type="number"
+                required
+                name="price" // Add name attribute for price
+                value={selectedRow ? selectedRow.price : ""}
+
+              />
+              <TextField
+                label="In Stock"
+                variant="outlined"
+                type="number"
+                required
+                name="inStock" // Add name attribute for inStock
+                value={selectedRow ? selectedRow.in_stock : ""}
+
+              />
+               <TextField
+                label="Out Stock"
+                variant="outlined"
+                type="number"
+                required
+                name="outStock" // Add name attribute for outStock
+                value={selectedRow ? selectedRow.out_stock : ""}
+
+              />
+                
+          </div>
+        </div>
+        <div style={{display: "flex", justifyContent: "flex-end"}}>
+        <Button
+            variant="contained"
+            color="primary"
+            style={{ marginTop: "30px", marginBottom: "5px", marginRight: "5px", width: "120px",  }}
+            onClick={fetchData}
+          >
+            Save 
+          </Button> 
+          </div> 
+      </Drawer>
         </Table>
       </TableContainer>
       <div className={classes.buttonContainer}>

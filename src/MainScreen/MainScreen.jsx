@@ -55,16 +55,22 @@ const MainScreen = () => {
     formData.append("barcode", event.target.barcode.value);
   
     if (selectedImage) {
+      // Get the file extension
+      const extension = selectedImage.name.split(".").pop();
+      // Set the image name to the name field value with the file extension
+      const imageName = `${event.target.name.value}.${extension}`;
+  
+      // Convert image to base64
       const reader = new FileReader();
+      reader.readAsDataURL(selectedImage);
       reader.onloadend = function () {
         const imageData = reader.result;
+        // Append the image data and name to the formData
         formData.append("image", imageData);
-        
-        // Now you can send formData to the backend
-        console.log("FormData with image:", formData);
+        formData.append("image_name", imageName);
+        // Send formData to the backend
         sendFormData(formData);
       };
-      reader.readAsDataURL(selectedImage);
     } else {
       // If no image is selected, directly send formData to the backend
       sendFormData(formData);
@@ -77,20 +83,20 @@ const MainScreen = () => {
         method: "POST",
         body: formData,
       });
-  
       if (!postDataResponse.ok) {
         throw new Error("Failed to insert data");
       }
   
       // Reset form and state after successful submission
-      event.target.reset();
       setBarcode("");
       setSelectedImage(null);
       toast.success("Data inserted successfully");
+      // event.target.reset();
+      // location.reload();
     } catch (error) {
       setError(error.message);
       if (error.message === "Failed to insert data") {
-        toast.error(`Duplicate date entry`);
+        toast.error(`Product Already Exists`);
       }
     }
   };
@@ -113,16 +119,15 @@ const MainScreen = () => {
     <>
       <Navbar />
       <Container
-        maxWidth="sm"
+        // maxWidth="sm"
+        maxWidth="lg"
         style={{
           marginTop: "50px",
-          justifyContent: "end",
-          minHeight: "calc(100vh - 64px)",
         }}
       >
         <style>{`
           body {
-            display: block; /* Reset body's display property */
+            display: block; 
             background-color: white;
           }
         `}</style>
@@ -133,7 +138,7 @@ const MainScreen = () => {
                 fullWidth
                 label="Barcode"
                 variant="outlined"
-                type="text"
+                type="number"
                 value={barcode}
                 onChange={handleBarcodeChange}
                 inputProps={{ "data-testid": "barcode-input" }}

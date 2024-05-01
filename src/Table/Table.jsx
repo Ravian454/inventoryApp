@@ -68,8 +68,9 @@ const SimpleTable = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false); 
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     fetchCategories();
@@ -141,6 +142,103 @@ const SimpleTable = () => {
     // Function to handle closing the Drawer
     setIsDrawerOpen(false);
   };
+
+  const handleImageChange = (file) => {
+    setSelectedImage(file);
+    setSelectedRow((prevRow) => ({
+      ...prevRow,
+      image: file,
+    }));
+  };
+  
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setSelectedRow((prevRow) => ({
+      ...prevRow,
+      image: null,
+    }));
+  };
+  
+
+  const handleSave = () => {
+    if (!selectedRow) return;
+  
+    let requestData = {
+      category: selectedRow.category,
+      barcode: selectedRow.barcode,
+      size: selectedRow.size,
+      name: selectedRow.name,
+      price: selectedRow.price,
+      in_stock: selectedRow.in_stock,
+      out_stock: selectedRow.out_stock,
+    };
+  
+    // If image exists and it's different from the old one, delete the old image
+    // if (selectedRow.image && selectedImage && selectedRow.image !== selectedImage.name) {
+    //   fetch(`http://localhost:8000/api/deleteImage/${selectedRow.image}`, {
+    //     method: "DELETE",
+    //   })
+    //     .then((response) => {
+    //       if (response.ok) {
+    //         console.log("Old image deleted successfully.");
+    //       } else {
+    //         console.error("Failed to delete old image.");
+    //       }
+    //     })
+    //     .catch((error) => console.error("Error deleting old image:", error));
+    // }
+  
+    // If image exists, convert it to base64
+    // if (selectedImage) {
+    //   const extension = selectedImage.name.split(".").pop();
+    //   // Set the image name to the name field value with the file extension
+    //   const imageName = `${selectedRow.name}.${extension}`;
+    //   // consol
+    //   // Convert image to base64
+    //   const reader = new FileReader();
+    //   reader.readAsDataURL(selectedImage);
+    //   reader.onloadend = function () {
+    //   const imageData = reader.result;
+    //   // Append the image data and name to the requestData
+    //   requestData = {
+    //     ...requestData,
+    //     image: imageData,
+    //     image_name: imageName, // Store base64-encoded image string
+    //   };
+    //   sendUpdateRequest(requestData);
+    //   };
+    // } else {
+      // If no image, send update request directly
+      sendUpdateRequest(requestData);
+    // }
+  };
+  
+
+const sendUpdateRequest = (requestData) => {
+  console.log(requestData);
+    fetch(`http://localhost:8000/api/update/${selectedRow.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Record updated successfully:", data);
+        // Optionally, you can update the state or perform any other actions after successful update
+      })
+      .catch((error) => console.error("Error updating record:", error));
+};
+
+const handleInputChange = (event, field) => {
+  const value = event.target.value;
+  setSelectedRow((prevRow) => ({
+    ...prevRow,
+    [field]: value,
+  }));
+};
+
 
   return (
     <div style={{ marginTop: "40px" }}>
@@ -224,23 +322,31 @@ const SimpleTable = () => {
             ))}
           </TableBody>
           <Drawer
-        anchor="top"
-        open={isDrawerOpen}
-        onClose={handleCloseDrawer} // Call handleCloseDrawer function on close
-      >
-        {/* Content of your Drawer */}
-        <div style={{ padding: "20px" }}>
-        <div style={{ padding: "20px", display: "flex", justifyContent: "space-evenly" }}> 
-          <FormControl>
-          <TextField
-                label="Category"
-                variant="outlined"
-                required
-                type="text"
-                name="category" // Add name attribute for category
-                value={selectedRow ? selectedRow.category : ""}
-              />
-              <TextField
+            anchor="bottom"
+            open={isDrawerOpen}
+            onClose={handleCloseDrawer} // Call handleCloseDrawer function on close
+          >
+            {/* Content of your Drawer */}
+            <div style={{ padding: "20px" }}>
+              <div
+                style={{
+                  padding: "20px",
+                  display: "flex",
+                  justifyContent: "space-evenly",
+                }}
+              >
+                <FormControl>
+                  <TextField
+                    label="Category"
+                    variant="outlined"
+                    required
+                    type="text"
+                    name="category" // Add name attribute for category
+                    value={selectedRow ? selectedRow.category : ""}
+                    onChange={(e) => handleInputChange(e, "category")}
+
+                  />
+                  <TextField
                     label="Barcode"
                     variant="outlined"
                     style={{ marginTop: "10px" }}
@@ -248,81 +354,129 @@ const SimpleTable = () => {
                     type="text"
                     name="barcode" // Add name attribute for category
                     value={selectedRow ? selectedRow.barcode : ""}
+                    onChange={(e) => handleInputChange(e, "barcode")}
+
                   />
-          </FormControl>
-          <FormControl >
-                <InputLabel id="size-label">Size</InputLabel>
-                <Select
-                  labelId="size-label"
-                  id="size"
-                  label="Size"
-                  defaultValue={16}
-                  name="size" // Add name attribute for size
-                  // value={selectedRow ? parseInt(selectedRow.size) : ""}
-                >
-                  <MenuItem value={16}>16 (1.5 to 2 years)</MenuItem>
-                  <MenuItem value={18}>18 (2 to 3 years)</MenuItem>
-                  <MenuItem value={20}>20 (3 to 4 years)</MenuItem>
-                  <MenuItem value={22}>22 (4 to 5 years)</MenuItem>
-                  <MenuItem value={24}>24 (5 to 6 years)</MenuItem>
-                  <MenuItem value={26}>26 (7 to 8 years)</MenuItem>
-                  <MenuItem value={28}>28 (8 to 9 years)</MenuItem>
-                  <MenuItem value={30}>30 (9 to 10 years)</MenuItem>
-                  <MenuItem value={32}>32 (10 to 11 years)</MenuItem>
-                </Select>
-              </FormControl>
+                </FormControl>
+                <FormControl>
+                  <InputLabel id="size-label">Size</InputLabel>
+                  <Select
+                    labelId="size-label"
+                    id="size"
+                    label="Size"
+                    name="size" // Add name attribute for size
+                    value={selectedRow ? parseInt(selectedRow.size) : ""}
+                    onChange={(e) => handleInputChange(e, "size")}
 
-              <TextField
-                label="Name"
-                variant="outlined"
-                type="text"
-                required
-                name="name" // Add name attribute for name
-                value={selectedRow ? selectedRow.name : ""}
+                  >
+                    <MenuItem value={16}>16 (1.5 to 2 years)</MenuItem>
+                    <MenuItem value={18}>18 (2 to 3 years)</MenuItem>
+                    <MenuItem value={20}>20 (3 to 4 years)</MenuItem>
+                    <MenuItem value={22}>22 (4 to 5 years)</MenuItem>
+                    <MenuItem value={24}>24 (5 to 6 years)</MenuItem>
+                    <MenuItem value={26}>26 (7 to 8 years)</MenuItem>
+                    <MenuItem value={28}>28 (8 to 9 years)</MenuItem>
+                    <MenuItem value={30}>30 (9 to 10 years)</MenuItem>
+                    <MenuItem value={32}>32 (10 to 11 years)</MenuItem>
+                  </Select>
+                </FormControl>
 
-              />
-              <TextField
-                
-                label="Price"
-                variant="outlined"
-                type="number"
-                required
-                name="price" // Add name attribute for price
-                value={selectedRow ? selectedRow.price : ""}
+                <TextField
+                  label="Name"
+                  variant="outlined"
+                  type="text"
+                  required
+                  name="name" // Add name attribute for name
+                  value={selectedRow ? selectedRow.name : ""}
+                  onChange={(e) => handleInputChange(e, "name")}
 
-              />
-              <TextField
-                label="In Stock"
-                variant="outlined"
-                type="number"
-                required
-                name="inStock" // Add name attribute for inStock
-                value={selectedRow ? selectedRow.in_stock : ""}
+                />
+                <TextField
+                  label="Price"
+                  variant="outlined"
+                  type="number"
+                  required
+                  name="price" // Add name attribute for price
+                  value={selectedRow ? selectedRow.price : ""}
+                  onChange={(e) => handleInputChange(e, "price")}
 
-              />
-               <TextField
-                label="Out Stock"
-                variant="outlined"
-                type="number"
-                required
-                name="outStock" // Add name attribute for outStock
-                value={selectedRow ? selectedRow.out_stock : ""}
+                />
+                <TextField
+                  label="In Stock"
+                  variant="outlined"
+                  type="number"
+                  required
+                  name="inStock" // Add name attribute for inStock
+                  value={selectedRow ? selectedRow.in_stock : ""}
+                  onChange={(e) => handleInputChange(e, "in_stock")}
 
-              />
-                
-          </div>
-        </div>
-        <div style={{display: "flex", justifyContent: "flex-end"}}>
-        <Button
-            variant="contained"
-            color="primary"
-            style={{ marginTop: "30px", marginBottom: "5px", marginRight: "5px", width: "120px",  }}
-            onClick={fetchData}
-          >
-            Save 
-          </Button> 
-          </div> 
-      </Drawer>
+                />
+                <TextField
+                  label="Out Stock"
+                  variant="outlined"
+                  type="number"
+                  required
+                  name="outStock" // Add name attribute for outStock
+                  value={selectedRow ? selectedRow.out_stock : ""}
+                  onChange={(e) => handleInputChange(e, "out_stock")}
+
+                />
+
+<FormControl>
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => handleImageChange(e.target.files[0])}
+  />
+  {selectedImage && (
+    <img
+      src={URL.createObjectURL(selectedImage)}
+      style={{ maxWidth: "100px", marginTop: "10px" }}
+    />
+  )}
+  {/* Only render the existing image if there is no selectedImage */}
+  {!selectedImage && selectedRow && selectedRow.image && (
+    <div className={classes.imageContainer}>
+      <img
+        src={`http://localhost:8000/storage/images/${selectedRow.image}`}
+        className={classes.image}
+        style={{ width: "200px", height: "200px" }}
+      />
+    </div>
+  )}
+</FormControl>
+
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleRemoveImage}
+                style={{
+                  marginTop: "30px",
+                  marginBottom: "5px",
+                  marginRight: "5px",
+                  width: "150px",
+                }}
+              >
+                Remove Image
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                style={{
+                  marginTop: "30px",
+                  marginBottom: "5px",
+                  marginRight: "5px",
+                  width: "120px",
+                }}
+                onClick={handleSave}
+              >
+                Save
+              </Button>
+            </div>
+          </Drawer>
         </Table>
       </TableContainer>
       <div className={classes.buttonContainer}>
